@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-16T23:05:16.114Z",
+  "updatedAt": "2026-03-27T05:08:26.779Z",
   "createdAt": "2026-03-10T00:33:16.655Z",
   "id": "bEGBRXLuX4TvUj5e",
   "name": "SMS Inbound Webhook",
@@ -14,7 +14,7 @@
         "width": 460,
         "color": 3
       },
-      "id": "fe36cd8a-98d5-4cd4-87fb-2d3a5506e46a",
+      "id": "16706c20-9e3a-4cca-a135-70ca7424fb70",
       "name": "Workflow Description",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -31,7 +31,7 @@
           "rawBody": true
         }
       },
-      "id": "34bccb61-e2dc-49e8-9d0d-88030cb12d88",
+      "id": "030804e4-660f-4f0f-8e99-1fb1fcf6adec",
       "name": "TextBee Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -39,13 +39,13 @@
         288,
         256
       ],
-      "webhookId": "aaaaaaaa-0000-0000-0000-000000000002"
+      "webhookId": "60b5ff33-2afa-4f01-8d81-ee54ffc267e1"
     },
     {
       "parameters": {
-        "jsCode": "// Uses Web Crypto API (no require('crypto') needed \u2014 works in n8n sandbox)\nconst secret = 'YOUR_TEXTBEE_WEBHOOK_SECRET';\n\nconst body = $input.first().json.body;\nconst received = (\n  ($input.first().json.headers && ($input.first().json.headers['x-signature'] || $input.first().json.headers['X-Signature'])) || ''\n).toLowerCase();\n\nconst signatureEnforced = false;\nif (!received) {\n  if (signatureEnforced) throw new Error('Missing TextBee signature \u2014 request rejected');\n  console.warn('WARNING: No TextBee signature \u2014 proceeding without verification (testing mode)');\n} else if (signatureEnforced) {\n  const encoder = new TextEncoder();\n  const key = await crypto.subtle.importKey(\n    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']\n  );\n  // TextBee signs JSON.stringify(payload) where payload = parsed request body\n  const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(JSON.stringify(body)));\n  const expected = Array.from(new Uint8Array(sigBuffer))\n    .map(b => b.toString(16).padStart(2, '0')).join('');\n  if (expected !== received) {\n    throw new Error('Invalid TextBee signature \u2014 request rejected');\n  }\n}\n\n// Normalize MESSAGE_SENT \u2192 MESSAGE_DELIVERED\nlet webhookEvent = body.webhookEvent || '';\nif (webhookEvent === 'MESSAGE_SENT') webhookEvent = 'MESSAGE_DELIVERED';\n\nreturn [{ json: {\n  webhookEvent,\n  recipient:     body.recipient || '',\n  message:       body.message || '',\n  deliveredAt:   body.deliveredAt || body.sentAt || '',\n  failedAt:      body.failedAt || '',\n  errorMessage:  body.errorMessage || '',\n  errorCode:     body.errorCode || '',\n  sender_phone:  body.sender || body.from || body.phoneNumber || body.senderNumber ||\n                 (body.data && (body.data.sender || body.data.phoneNumber)) || '',\n  message_text:  body.message || body.body || body.text ||\n                 (body.data && (body.data.message || body.data.text)) || '',\n  raw_timestamp: body.receivedAt || body.createdAt || body.timestamp ||\n                 (body.data && (body.data.receivedAt || body.data.createdAt)) || '',\n}}];"
+        "jsCode": "// n8n task runner sandbox: crypto global not available, require('crypto') not available.\n// Signature verification gated on signatureEnforced=true (currently disabled).\n// To re-enable: set signatureEnforced = true \u2014 but note crypto.subtle must be available.\nconst secret = 'YOUR_TEXTBEE_WEBHOOK_SECRET';\n\nconst body = $input.first().json.body;\nconst received = (\n  ($input.first().json.headers && ($input.first().json.headers['x-signature'] || $input.first().json.headers['X-Signature'])) || ''\n).toLowerCase();\n\nconst signatureEnforced = false;\nif (!received) {\n  if (signatureEnforced) throw new Error('Missing TextBee signature \u2014 request rejected');\n  console.warn('WARNING: No TextBee signature \u2014 proceeding without verification (testing mode)');\n} else if (signatureEnforced) {\n  const encoder = new TextEncoder();\n  const key = await crypto.subtle.importKey(\n    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']\n  );\n  // TextBee signs JSON.stringify(payload) where payload = parsed request body\n  const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(JSON.stringify(body)));\n  const expected = Array.from(new Uint8Array(sigBuffer))\n    .map(b => b.toString(16).padStart(2, '0')).join('');\n  if (expected !== received) {\n    throw new Error('Invalid TextBee signature \u2014 request rejected');\n  }\n}\n\n// Normalize MESSAGE_SENT \u2192 MESSAGE_DELIVERED\nlet webhookEvent = body.webhookEvent || '';\nif (webhookEvent === 'MESSAGE_SENT') webhookEvent = 'MESSAGE_DELIVERED';\n\nreturn [{ json: {\n  webhookEvent,\n  recipient:     body.recipient || '',\n  message:       body.message || '',\n  deliveredAt:   body.deliveredAt || body.sentAt || '',\n  failedAt:      body.failedAt || '',\n  errorMessage:  body.errorMessage || '',\n  errorCode:     body.errorCode || '',\n  sender_phone:  body.sender || body.from || body.phoneNumber || body.senderNumber ||\n                 (body.data && (body.data.sender || body.data.phoneNumber)) || '',\n  message_text:  body.message || body.body || body.text ||\n                 (body.data && (body.data.message || body.data.text)) || '',\n  raw_timestamp: body.receivedAt || body.createdAt || body.timestamp ||\n                 (body.data && (body.data.receivedAt || body.data.createdAt)) || '',\n}}];"
       },
-      "id": "d1c57586-da45-4fda-8ec8-266bc42062de",
+      "id": "7e4b8781-d4a4-4090-a932-61ea5d95d101",
       "name": "Verify & Parse",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -63,9 +63,9 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
+                  "typeValidation": "strict"
                 },
+                "combinator": "and",
                 "conditions": [
                   {
                     "leftValue": "={{ $json.webhookEvent }}",
@@ -73,11 +73,9 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    },
-                    "id": "5718fd46-1ccb-4f93-9d3d-2eaac0ce1cc8"
+                    }
                   }
-                ],
-                "combinator": "and"
+                ]
               }
             },
             {
@@ -85,9 +83,9 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
+                  "typeValidation": "strict"
                 },
+                "combinator": "and",
                 "conditions": [
                   {
                     "leftValue": "={{ $json.webhookEvent }}",
@@ -95,11 +93,9 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    },
-                    "id": "73023cd0-49bd-4099-a665-147adeeb7f90"
+                    }
                   }
-                ],
-                "combinator": "and"
+                ]
               }
             },
             {
@@ -107,9 +103,9 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
+                  "typeValidation": "strict"
                 },
+                "combinator": "and",
                 "conditions": [
                   {
                     "leftValue": "={{ $json.webhookEvent }}",
@@ -117,68 +113,22 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    },
-                    "id": "82c00c42-3955-43da-92e3-506733194eac"
+                    }
                   }
-                ],
-                "combinator": "and"
+                ]
               }
             }
           ]
         },
         "options": {}
       },
-      "id": "af3c2b19-1329-4ca3-a821-98ed6cb53ce7",
+      "id": "1b6a3a9a-c1ea-4d9c-89ad-9af98d6f47ac",
       "name": "Route on Event",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
         736,
         240
-      ]
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Leads",
-          "mode": "name",
-          "cachedResultName": "Leads"
-        },
-        "combineFilters": "AND",
-        "options": {}
-      },
-      "id": "f7969829-0d4c-4bf1-9db2-cd858b1e58e2",
-      "name": "Read Leads (Delivery)",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4,
-      "position": [
-        1024,
-        64
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const NZT_OFFSET = 13; // NZDT (UTC+13)\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  // If no timestamp (MESSAGE_SENT has none), fall back to current NZT time\n  const base = rawTime ? new Date(rawTime) : new Date();\n  const dt = (!rawTime || isNaN(base)) ? new Date() : base;\n  const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n  return nzt.toISOString().slice(0, 16).replace('T', ' ');\n}\n\nfunction getModeFromMessage(msg) {\n  if (msg.includes('Worth a chat?'))       return 'Initial Sent';\n  if (msg.includes('just following up'))   return 'F1 Sent';\n  if (msg.includes('Last one from me'))    return 'F2 Sent';\n  return null;\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst recipientNorm = normalizeForMatch(parsed.recipient);\n\n// Find matching lead row first\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === recipientNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nconst tsCol = getModeFromMessage(parsed.message);\n\nif (!tsCol) {\n  // Brandon's manual reply from TextBee \u2014 increment Brandon_Replies and queue for Conversations log\n  const currentCount = parseInt(matchRow['Brandon_Replies'] || '0', 10) || 0;\n  const nztTimestamp = toNZTStr(parsed.deliveredAt);\n  return [{\n    json: {\n      Mobile:           matchRow['Mobile'],\n      Brandon_Replies:  String(currentCount + 1),\n      _is_manual_reply: true,\n      phone_for_conv:   matchRow['Mobile'],\n      timestamp:        nztTimestamp,\n      message_text:     parsed.message,\n    }\n  }];\n}\n\n// WF1 scheduled send \u2014 confirm delivery timestamp\nconst confirmedTimestamp = toNZTStr(parsed.deliveredAt);\n\n// Idempotency guard: skip if timestamp already confirmed (handles duplicate webhook fires)\nconst existingTs = (matchRow[tsCol] || '').trim();\nif (existingTs && existingTs !== 'PENDING') return [];\n\nconst output = { Mobile: matchRow['Mobile'], _is_manual_reply: false };\noutput[tsCol] = confirmedTimestamp;\nreturn [{ json: output }];"
-      },
-      "id": "ac0b1563-6deb-437b-873a-058b28b376db",
-      "name": "Match & Confirm Delivery",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1312,
-        64
       ]
     },
     {
@@ -190,9 +140,9 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
+                  "typeValidation": "strict"
                 },
+                "combinator": "and",
                 "conditions": [
                   {
                     "leftValue": "={{ $json._is_manual_reply }}",
@@ -200,11 +150,9 @@
                     "operator": {
                       "type": "boolean",
                       "operation": "equals"
-                    },
-                    "id": "4585c446-c7e6-4b9f-a622-a1b45219f0a8"
+                    }
                   }
-                ],
-                "combinator": "and"
+                ]
               },
               "renameOutput": true,
               "outputKey": "Manual Reply"
@@ -214,9 +162,9 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
+                  "typeValidation": "strict"
                 },
+                "combinator": "and",
                 "conditions": [
                   {
                     "leftValue": "={{ $json._is_manual_reply }}",
@@ -224,21 +172,18 @@
                     "operator": {
                       "type": "boolean",
                       "operation": "equals"
-                    },
-                    "id": "13578d5f-771e-4f14-b7ef-ca7cd773e1c4"
+                    }
                   }
-                ],
-                "combinator": "and"
+                ]
               },
               "renameOutput": true,
               "outputKey": "WF1 Send"
             }
           ]
         },
-        "options": {},
-        "fallbackOutput": 1
+        "options": {}
       },
-      "id": "ebd35b67-165e-4688-a57b-314b8e17c380",
+      "id": "ff3d02e4-60ba-4071-9502-efcedde8c72d",
       "name": "Route Reply Type",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
@@ -265,218 +210,17 @@
           "mappingMode": "defineBelow",
           "value": {
             "Mobile": "={{ $json.Mobile }}",
-            "Brandon_Replies": "={{ $json.Brandon_Replies }}",
-            "row_number": 0
+            "Brandon_Replies": "={{ $json.Brandon_Replies }}"
           },
           "matchingColumns": [
             "Mobile"
           ],
           "schema": [
             {
-              "id": "Name",
-              "displayName": "Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
               "id": "Mobile",
               "displayName": "Mobile",
               "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Email",
-              "displayName": "Email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Agency",
-              "displayName": "Agency",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "City",
-              "displayName": "City",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Date Scraped",
-              "displayName": "Date Scraped",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Type",
-              "displayName": "Type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Sent",
-              "displayName": "Initial Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Message",
-              "displayName": "Initial Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Sent",
-              "displayName": "F1 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Message",
-              "displayName": "F1 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Sent",
-              "displayName": "F2 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Message",
-              "displayName": "F2 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Replied",
-              "displayName": "Replied",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply After",
-              "displayName": "Reply After",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Received",
-              "displayName": "Reply Received",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Text",
-              "displayName": "Reply Text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Outcome",
-              "displayName": "Outcome",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Notes",
-              "displayName": "Notes",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Status",
-              "displayName": "Status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Lead_Replies",
-              "displayName": "Lead_Replies",
-              "required": false,
-              "defaultMatch": false,
+              "defaultMatch": true,
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
@@ -489,27 +233,14 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "row_number",
-              "displayName": "row_number",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "readOnly": true,
+              "canBeUsedToMatch": false,
               "removed": false
             }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+          ]
         },
         "options": {}
       },
-      "id": "c1065770-275b-4034-8c6d-dd0c870de100",
+      "id": "6f0b6766-0f19-4ddc-a8bd-7dc3664fcb75",
       "name": "Update Brandon Reply Count",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
@@ -592,7 +323,7 @@
         },
         "options": {}
       },
-      "id": "91d7d7ed-cc81-4147-85bd-7dbb3d45cc31",
+      "id": "da230bae-5209-4140-9f72-13267bad1036",
       "name": "Log Manual Reply",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
@@ -623,249 +354,14 @@
         },
         "columns": {
           "mappingMode": "autoMapInputData",
-          "value": {},
           "matchingColumns": [
             "Mobile"
           ],
-          "schema": [
-            {
-              "id": "Name",
-              "displayName": "Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Mobile",
-              "displayName": "Mobile",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Email",
-              "displayName": "Email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Agency",
-              "displayName": "Agency",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "City",
-              "displayName": "City",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Date Scraped",
-              "displayName": "Date Scraped",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Type",
-              "displayName": "Type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Sent",
-              "displayName": "Initial Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Message",
-              "displayName": "Initial Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Sent",
-              "displayName": "F1 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Message",
-              "displayName": "F1 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Sent",
-              "displayName": "F2 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Message",
-              "displayName": "F2 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Replied",
-              "displayName": "Replied",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply After",
-              "displayName": "Reply After",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Received",
-              "displayName": "Reply Received",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Text",
-              "displayName": "Reply Text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Outcome",
-              "displayName": "Outcome",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Notes",
-              "displayName": "Notes",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Status",
-              "displayName": "Status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Lead_Replies",
-              "displayName": "Lead_Replies",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Brandon_Replies",
-              "displayName": "Brandon_Replies",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "row_number",
-              "displayName": "row_number",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "readOnly": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+          "schema": []
         },
         "options": {}
       },
-      "id": "eaa22248-a170-4d74-afd1-a5483fd20ea8",
+      "id": "d44678e9-7088-49fb-adfb-96d8aaee8a07",
       "name": "Update Delivered Timestamp",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
@@ -896,10 +392,12 @@
         "combineFilters": "AND",
         "options": {}
       },
-      "id": "b9c0d4d5-c969-46cb-b439-f733802d3b72",
+      "id": "a24ab6c9-5153-4f61-9410-275d30833983",
       "name": "Read Leads (Failure)",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
+      "maxTries": 5,
+      "waitBetweenTries": 3000,
       "position": [
         1024,
         256
@@ -909,13 +407,14 @@
           "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
-      }
+      },
+      "onError": "retryOnFail"
     },
     {
       "parameters": {
-        "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction getModeFromMessage(msg) {\n  if (msg.includes('Worth a chat?'))       return 'Initial Sent';\n  if (msg.includes('just following up'))   return 'F1 Sent';\n  if (msg.includes('Last one from me'))    return 'F2 Sent';\n  return null;\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst recipientNorm = normalizeForMatch(parsed.recipient);\nconst tsCol = getModeFromMessage(parsed.message);\nif (!tsCol) return [];\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === recipientNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nconst errorNote = 'FAILED: ' + (parsed.errorMessage || parsed.errorCode || 'unknown error');\nconst existingNotes = (matchRow['Notes'] || '').trim();\nconst notes = existingNotes ? existingNotes + '; ' + errorNote : errorNote;\n\nconst output = { Mobile: matchRow['Mobile'] };\noutput[tsCol] = '';  // clear PENDING \u2014 lead becomes eligible again\noutput['Notes'] = notes;\nreturn [{ json: output }];"
+        "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction getModeFromMessage(msg) {\n  if (msg.includes('Last one from me'))                               return 'F2 Sent';\n  if (msg.includes('following up'))                                   return 'F1 Sent';\n  if (msg.includes('Worth a chat?') || msg.includes('Building something')) return 'Initial Sent';\n  return null;\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst recipientNorm = normalizeForMatch(parsed.recipient);\nconst tsCol = getModeFromMessage(parsed.message);\nif (!tsCol) return [];\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === recipientNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nconst errorNote = 'FAILED: ' + (parsed.errorMessage || parsed.errorCode || 'unknown error');\nconst existingNotes = (matchRow['Notes'] || '').trim();\nconst notes = existingNotes ? existingNotes + '; ' + errorNote : errorNote;\n\nconst output = { Mobile: matchRow['Mobile'] };\noutput[tsCol] = '';  // clear PENDING \u2014 lead becomes eligible again\noutput['Notes'] = notes;\nreturn [{ json: output }];"
       },
-      "id": "10f7a23f-7624-470f-b11c-2e8058e17974",
+      "id": "28ac6820-9837-45ae-beda-3d6327fcc8b2",
       "name": "Match & Clear Failure",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -940,249 +439,14 @@
         },
         "columns": {
           "mappingMode": "autoMapInputData",
-          "value": {},
           "matchingColumns": [
             "Mobile"
           ],
-          "schema": [
-            {
-              "id": "Name",
-              "displayName": "Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Mobile",
-              "displayName": "Mobile",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Email",
-              "displayName": "Email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Agency",
-              "displayName": "Agency",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "City",
-              "displayName": "City",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Date Scraped",
-              "displayName": "Date Scraped",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Type",
-              "displayName": "Type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Sent",
-              "displayName": "Initial Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Message",
-              "displayName": "Initial Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Sent",
-              "displayName": "F1 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Message",
-              "displayName": "F1 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Sent",
-              "displayName": "F2 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Message",
-              "displayName": "F2 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Replied",
-              "displayName": "Replied",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply After",
-              "displayName": "Reply After",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Received",
-              "displayName": "Reply Received",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Text",
-              "displayName": "Reply Text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Outcome",
-              "displayName": "Outcome",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Notes",
-              "displayName": "Notes",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Status",
-              "displayName": "Status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Lead_Replies",
-              "displayName": "Lead_Replies",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Brandon_Replies",
-              "displayName": "Brandon_Replies",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "row_number",
-              "displayName": "row_number",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "readOnly": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+          "schema": []
         },
         "options": {}
       },
-      "id": "ecaf3121-d5ad-4365-b44b-1a2f1549a8e4",
+      "id": "ca1dd807-2931-433f-888b-0369400bc997",
       "name": "Update Failure Record",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
@@ -1222,7 +486,7 @@
           "temperature": 0
         }
       },
-      "id": "7a1e7884-8181-4add-8a47-ed2d3d087ff6",
+      "id": "9ed8e0cd-8b2a-47e1-b4c8-7ae04e31280e",
       "name": "Message a model",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
@@ -1241,7 +505,7 @@
       "parameters": {
         "jsCode": "const json = $input.item.json;\n\n// n8n OpenAI langchain node v2.1 returns:\n//   json.output = [{ content: [{ type: \"output_text\", text: \"...\" }] }]\nlet raw = '';\nif (Array.isArray(json.output) && json.output[0]) {\n  const content = json.output[0].content;\n  if (Array.isArray(content)) {\n    const chunk = content.find(c => c.text) || content[0];\n    if (chunk) raw = chunk.text || '';\n  } else if (typeof json.output[0] === 'string') {\n    raw = json.output[0];\n  }\n}\n// Fallbacks for other node versions\nif (!raw) {\n  const candidate = json.text || json.response || json.content ||\n    (json.message && (json.message.content || json.message.text)) ||\n    (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';\n  raw = typeof candidate === 'string' ? candidate : JSON.stringify(candidate);\n}\nraw = raw.trim();\n\nconst VALID = ['Interested', 'Not Interested', 'Opted Out', 'Question', 'Call Back Later', 'Wrong Role', 'Other'];\nlet status = 'Other';\n\ntry {\n  const parsed = JSON.parse(raw);\n  const candidate = parsed.status || '';\n  if (VALID.includes(candidate)) status = candidate;\n} catch(e) {\n  // Try regex match first\n  const match = raw.match(/\"status\"\\s*:\\s*\"([^\"]+)\"/);\n  if (match && VALID.includes(match[1])) {\n    status = match[1];\n  } else {\n    // Keyword fallback: scan raw text for any known status\n    for (const s of VALID) {\n      if (raw.includes(s)) { status = s; break; }\n    }\n  }\n}\nreturn [{ json: { classified_status: status } }];"
       },
-      "id": "eb0d4906-1047-4d59-af6e-a02f5cb75c58",
+      "id": "6af4457a-18a7-46b2-9c8e-0d8c7424905d",
       "name": "Parse Classification",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1266,10 +530,12 @@
         "combineFilters": "AND",
         "options": {}
       },
-      "id": "24443ebc-d015-4639-985a-6117f5c7c4e3",
+      "id": "1af6afce-5d7b-459a-98c4-4096272c2206",
       "name": "Read Leads (Inbound)",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
+      "maxTries": 5,
+      "waitBetweenTries": 3000,
       "position": [
         1536,
         448
@@ -1279,13 +545,14 @@
           "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
-      }
+      },
+      "onError": "retryOnFail"
     },
     {
       "parameters": {
-        "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  if (!rawTime) return '';\n  try {\n    const dt = new Date(rawTime);\n    if (isNaN(dt)) return rawTime;\n    const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n    return nzt.toISOString().slice(0, 16).replace('T', ' ');\n  } catch(e) { return rawTime; }\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst senderNorm = normalizeForMatch(parsed.sender_phone);\nconst messageText = parsed.message_text;\nconst receivedStr = toNZTStr(parsed.raw_timestamp);\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === senderNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nlet replyAfter = 'Unknown';\nif ((matchRow['F2 Sent'] || '').trim() && matchRow['F2 Sent'] !== 'PENDING') replyAfter = 'F2';\nelse if ((matchRow['F1 Sent'] || '').trim() && matchRow['F1 Sent'] !== 'PENDING') replyAfter = 'F1';\nelse if ((matchRow['Initial Sent'] || '').trim()) replyAfter = 'Initial';\n\nconst currentLeadReplies = parseInt(matchRow['Lead_Replies'] || '0', 10) || 0;\n\nreturn [{\n  json: {\n    Mobile:           matchRow['Mobile'],\n    Replied:          'Y',\n    'Reply After':    replyAfter,\n    'Reply Received': receivedStr,\n    'Reply Text':     messageText,\n    Status:           $('Parse Classification').item.json.classified_status || 'Other',\n    Lead_Replies:     String(currentLeadReplies + 1),\n    phone_for_conv:   matchRow['Mobile'],\n    message_text:     messageText,\n    timestamp:        receivedStr,\n    Name:             matchRow['Name'] || '',\n    Agency:           matchRow['Agency'] || '',\n    City:             matchRow['City'] || '',\n  }\n}];"
+        "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  if (!rawTime) return '';\n  try {\n    const dt = new Date(rawTime);\n    if (isNaN(dt)) return rawTime;\n    const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n    return nzt.toISOString().slice(0, 16).replace('T', ' ');\n  } catch(e) { return rawTime; }\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst senderNorm = normalizeForMatch(parsed.sender_phone);\nconst messageText = parsed.message_text;\nconst receivedStr = toNZTStr(parsed.raw_timestamp);\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === senderNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nlet replyAfter = 'Unknown';\nif ((matchRow['F2 Sent'] || '').trim() && matchRow['F2 Sent'] !== 'PENDING') replyAfter = 'F2';\nelse if ((matchRow['F1 Sent'] || '').trim() && matchRow['F1 Sent'] !== 'PENDING') replyAfter = 'F1';\nelse if ((matchRow['Initial Sent'] || '').trim()) replyAfter = 'Initial';\n\nconst currentLeadReplies = parseInt(matchRow['Lead_Replies'] || '0', 10) || 0;\n\nreturn [{\n  json: {\n    Mobile:           matchRow['Mobile'],\n    Replied:          true,\n    'Reply After':    replyAfter,\n    'Reply Received': receivedStr,\n    'Reply Text':     messageText,\n    Status:           $('Parse Classification').item.json.classified_status || 'Other',\n    Lead_Replies:     String(currentLeadReplies + 1),\n    phone_for_conv:   matchRow['Mobile'],\n    message_text:     messageText,\n    timestamp:        receivedStr,\n    Name:             matchRow['Name'] || '',\n    Agency:           matchRow['Agency'] || '',\n    City:             matchRow['City'] || '',\n  }\n}];"
       },
-      "id": "0b59828c-5bbe-4c04-833a-038383ae247d",
+      "id": "9a4711db-313b-4697-9832-a9990a8c5f58",
       "name": "Match & Prepare Inbound",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1310,249 +577,14 @@
         },
         "columns": {
           "mappingMode": "autoMapInputData",
-          "value": {},
           "matchingColumns": [
             "Mobile"
           ],
-          "schema": [
-            {
-              "id": "Name",
-              "displayName": "Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Mobile",
-              "displayName": "Mobile",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Email",
-              "displayName": "Email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Agency",
-              "displayName": "Agency",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "City",
-              "displayName": "City",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Date Scraped",
-              "displayName": "Date Scraped",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Type",
-              "displayName": "Type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Sent",
-              "displayName": "Initial Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Initial Message",
-              "displayName": "Initial Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Sent",
-              "displayName": "F1 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F1 Message",
-              "displayName": "F1 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Sent",
-              "displayName": "F2 Sent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "F2 Message",
-              "displayName": "F2 Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Replied",
-              "displayName": "Replied",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply After",
-              "displayName": "Reply After",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Received",
-              "displayName": "Reply Received",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Reply Text",
-              "displayName": "Reply Text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Outcome",
-              "displayName": "Outcome",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Notes",
-              "displayName": "Notes",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Status",
-              "displayName": "Status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Lead_Replies",
-              "displayName": "Lead_Replies",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Brandon_Replies",
-              "displayName": "Brandon_Replies",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "row_number",
-              "displayName": "row_number",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "readOnly": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+          "schema": []
         },
         "options": {}
       },
-      "id": "ffff469e-4204-4a65-a895-25558d5bf31e",
+      "id": "92b941f6-2d80-41f1-9e86-e6b2ce1aee49",
       "name": "Update Reply Columns",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
@@ -1635,7 +667,7 @@
         },
         "options": {}
       },
-      "id": "76ccb509-7779-453f-ba10-b1960e4b2b82",
+      "id": "d517a36e-e455-4243-ac77-9805910454cd",
       "name": "Log to Conversations",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
@@ -1724,7 +756,7 @@
         },
         "options": {}
       },
-      "id": "b6576311-7ba3-4197-97e8-53860d1e5d45",
+      "id": "0dbfd181-85cc-476e-bb82-1fd6a0e7a843",
       "name": "Email Switch",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
@@ -1740,7 +772,7 @@
         "message": "=<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;border:2px solid #dc2626;border-radius:8px;overflow:hidden\">\n  <div style=\"background:#dc2626;padding:20px 24px\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px\">\ud83d\udd25 HOT LEAD REPLY</h1>\n    <p style=\"color:#fca5a5;margin:6px 0 0;font-size:14px\">A lead replied interested \u2014 CALL THEM NOW</p>\n  </div>\n  <div style=\"padding:24px\">\n    <table style=\"width:100%;border-collapse:collapse;margin-bottom:20px\">\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px;width:80px\">Name</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Name'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Agency</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Agency'] }}</td></tr>\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">City</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['City'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Mobile</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Mobile'] }}</td></tr>\n    </table>\n    <div style=\"background:#fef2f2;border-left:4px solid #dc2626;padding:12px 16px;margin-bottom:20px;border-radius:0 4px 4px 0\">\n      <p style=\"margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Their reply</p>\n      <p style=\"margin:0;font-size:15px;color:#111\">{{ $('Match & Prepare Inbound').item.json['message_text'] }}</p>\n    </div>\n    <div style=\"background:#f0fdf4;border:1px solid #bbf7d0;padding:12px 16px;border-radius:4px\">\n      <p style=\"margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Suggested follow-up text</p>\n      <p style=\"margin:0;font-size:14px;color:#166534\">Hey [name], great to hear! I'd love to show you how it works \u2014 are you free for a 15-min call this week? - Brandon</p>\n    </div>\n  </div>\n</div>",
         "options": {}
       },
-      "id": "79c94a9e-5384-4518-a9c8-9cc3aa440a5d",
+      "id": "8c26f6c8-c1c0-416f-afbd-aadd5d4734de",
       "name": "Email \u2014 Interested",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -1748,7 +780,7 @@
         2656,
         256
       ],
-      "webhookId": "aaaaaaaa-0000-0000-0000-000000000003",
+      "webhookId": "4c8fdf94-5903-4a66-b066-50e1a51ccf33",
       "credentials": {
         "gmailOAuth2": {
           "id": "YOUR_GMAIL_CREDENTIAL_ID",
@@ -1763,7 +795,7 @@
         "message": "=<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;border:2px solid #2563eb;border-radius:8px;overflow:hidden\">\n  <div style=\"background:#2563eb;padding:20px 24px\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px\">\u2753 LEAD HAS A QUESTION</h1>\n    <p style=\"color:#bfdbfe;margin:6px 0 0;font-size:14px\">Reply ASAP while the conversation is warm</p>\n  </div>\n  <div style=\"padding:24px\">\n    <table style=\"width:100%;border-collapse:collapse;margin-bottom:20px\">\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px;width:80px\">Name</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Name'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Agency</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Agency'] }}</td></tr>\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">City</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['City'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Mobile</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Mobile'] }}</td></tr>\n    </table>\n    <div style=\"background:#eff6ff;border-left:4px solid #2563eb;padding:12px 16px;border-radius:0 4px 4px 0\">\n      <p style=\"margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Their question</p>\n      <p style=\"margin:0;font-size:15px;color:#111\">{{ $('Match & Prepare Inbound').item.json['message_text'] }}</p>\n    </div>\n  </div>\n</div>",
         "options": {}
       },
-      "id": "55dfb149-3389-4c91-bcfd-6733bc66eb92",
+      "id": "1976e0b0-ee93-47a9-8c0c-055050fe9d38",
       "name": "Email \u2014 Question",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -1771,7 +803,7 @@
         2656,
         448
       ],
-      "webhookId": "aaaaaaaa-0000-0000-0000-000000000004",
+      "webhookId": "78ad1f75-295f-4464-bb92-113b1012eacd",
       "credentials": {
         "gmailOAuth2": {
           "id": "YOUR_GMAIL_CREDENTIAL_ID",
@@ -1786,7 +818,7 @@
         "message": "=<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;border:2px solid #d97706;border-radius:8px;overflow:hidden\">\n  <div style=\"background:#d97706;padding:20px 24px\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px\">\u23f0 ASKED TO CALL BACK</h1>\n    <p style=\"color:#fde68a;margin:6px 0 0;font-size:14px\">Not a no \u2014 follow up soon</p>\n  </div>\n  <div style=\"padding:24px\">\n    <table style=\"width:100%;border-collapse:collapse;margin-bottom:20px\">\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px;width:80px\">Name</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Name'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Agency</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Agency'] }}</td></tr>\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">City</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['City'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Mobile</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Mobile'] }}</td></tr>\n    </table>\n    <div style=\"background:#fffbeb;border-left:4px solid #d97706;padding:12px 16px;border-radius:0 4px 4px 0\">\n      <p style=\"margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Their message</p>\n      <p style=\"margin:0;font-size:15px;color:#111\">{{ $('Match & Prepare Inbound').item.json['message_text'] }}</p>\n    </div>\n  </div>\n</div>",
         "options": {}
       },
-      "id": "778ecc91-9025-439a-b1ce-5c1076c22377",
+      "id": "4d28d221-d58d-48c3-ad41-559d1d9be324",
       "name": "Email \u2014 Call Back Later",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -1794,13 +826,26 @@
         2656,
         640
       ],
-      "webhookId": "aaaaaaaa-0000-0000-0000-000000000005",
+      "webhookId": "3244f128-ca97-4e7f-908c-3073e3eda7fc",
       "credentials": {
         "gmailOAuth2": {
           "id": "YOUR_GMAIL_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const NZT_OFFSET = 13; // NZDT (UTC+13)\n\nfunction normalizePhone(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  const base = rawTime ? new Date(rawTime) : new Date();\n  const dt = (!rawTime || isNaN(base)) ? new Date() : base;\n  const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n  return nzt.toISOString().slice(0, 16).replace('T', ' ');\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst mobile = normalizePhone(parsed.recipient);\nconst msg = (parsed.message || '').trim();\n\n// Determine stage column from message keywords (no sheet read needed)\nlet tsCol;\nif (msg.includes('Last one from me')) {\n  tsCol = 'F2 Sent';\n} else if (msg.includes('following up')) {\n  tsCol = 'F1 Sent';\n} else if (msg.includes('Worth a chat?') || msg.includes('Building something')) {\n  tsCol = 'Initial Sent';\n} else {\n  // No keyword match \u2014 Brandon manual reply or unknown message; terminate cleanly\n  return [];\n}\n\nconst ts = toNZTStr(parsed.deliveredAt);\nconst output = { Mobile: mobile, _is_manual_reply: false };\noutput[tsCol] = ts;\nreturn [{ json: output }];"
+      },
+      "id": "a7f3d812-1b2e-4c8f-9e3a-5d6f7a8b9c0d",
+      "name": "Resolve Stage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        64
+      ]
     }
   ],
   "connections": {
@@ -1830,7 +875,7 @@
       "main": [
         [
           {
-            "node": "Read Leads (Delivery)",
+            "node": "Resolve Stage",
             "type": "main",
             "index": 0
           }
@@ -1845,28 +890,6 @@
         [
           {
             "node": "Message a model",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read Leads (Delivery)": {
-      "main": [
-        [
-          {
-            "node": "Match & Confirm Delivery",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Match & Confirm Delivery": {
-      "main": [
-        [
-          {
-            "node": "Route Reply Type",
             "type": "main",
             "index": 0
           }
@@ -2014,6 +1037,17 @@
           }
         ]
       ]
+    },
+    "Resolve Stage": {
+      "main": [
+        [
+          {
+            "node": "Route Reply Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -2026,9 +1060,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "4af17d70-5428-47ff-b86d-0146583a50bb",
-  "activeVersionId": "4af17d70-5428-47ff-b86d-0146583a50bb",
-  "versionCounter": 186,
+  "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
+  "activeVersionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
+  "versionCounter": 244,
   "triggerCount": 1,
   "shared": [
     {
@@ -2036,24 +1070,24 @@
       "createdAt": "2026-03-10T00:33:16.657Z",
       "role": "workflow:owner",
       "workflowId": "bEGBRXLuX4TvUj5e",
-      "projectId": "7SEyEnkrJFQZ387O",
+      "projectId": "YOUR_N8N_PROJECT_ID",
       "project": {
         "updatedAt": "2026-03-09T23:25:14.299Z",
         "createdAt": "2026-03-09T23:01:24.415Z",
-        "id": "7SEyEnkrJFQZ387O",
+        "id": "YOUR_N8N_PROJECT_ID",
         "name": "Your Name <your@email.com>",
         "type": "personal",
         "icon": null,
         "description": null,
-        "creatorId": "bbc22449-1cc6-48f3-a48e-2171661c253f"
+        "creatorId": "YOUR_N8N_USER_ID"
       }
     }
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-16T23:05:16.115Z",
-    "createdAt": "2026-03-16T23:05:16.115Z",
-    "versionId": "4af17d70-5428-47ff-b86d-0146583a50bb",
+    "updatedAt": "2026-03-27T05:08:26.780Z",
+    "createdAt": "2026-03-27T05:08:26.780Z",
+    "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
     "workflowId": "bEGBRXLuX4TvUj5e",
     "nodes": [
       {
@@ -2063,7 +1097,7 @@
           "width": 460,
           "color": 3
         },
-        "id": "fe36cd8a-98d5-4cd4-87fb-2d3a5506e46a",
+        "id": "16706c20-9e3a-4cca-a135-70ca7424fb70",
         "name": "Workflow Description",
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
@@ -2080,7 +1114,7 @@
             "rawBody": true
           }
         },
-        "id": "34bccb61-e2dc-49e8-9d0d-88030cb12d88",
+        "id": "030804e4-660f-4f0f-8e99-1fb1fcf6adec",
         "name": "TextBee Webhook",
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
@@ -2088,13 +1122,13 @@
           288,
           256
         ],
-        "webhookId": "aaaaaaaa-0000-0000-0000-000000000002"
+        "webhookId": "60b5ff33-2afa-4f01-8d81-ee54ffc267e1"
       },
       {
         "parameters": {
-          "jsCode": "// Uses Web Crypto API (no require('crypto') needed \u2014 works in n8n sandbox)\nconst secret = 'YOUR_TEXTBEE_WEBHOOK_SECRET';\n\nconst body = $input.first().json.body;\nconst received = (\n  ($input.first().json.headers && ($input.first().json.headers['x-signature'] || $input.first().json.headers['X-Signature'])) || ''\n).toLowerCase();\n\nconst signatureEnforced = false;\nif (!received) {\n  if (signatureEnforced) throw new Error('Missing TextBee signature \u2014 request rejected');\n  console.warn('WARNING: No TextBee signature \u2014 proceeding without verification (testing mode)');\n} else if (signatureEnforced) {\n  const encoder = new TextEncoder();\n  const key = await crypto.subtle.importKey(\n    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']\n  );\n  // TextBee signs JSON.stringify(payload) where payload = parsed request body\n  const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(JSON.stringify(body)));\n  const expected = Array.from(new Uint8Array(sigBuffer))\n    .map(b => b.toString(16).padStart(2, '0')).join('');\n  if (expected !== received) {\n    throw new Error('Invalid TextBee signature \u2014 request rejected');\n  }\n}\n\n// Normalize MESSAGE_SENT \u2192 MESSAGE_DELIVERED\nlet webhookEvent = body.webhookEvent || '';\nif (webhookEvent === 'MESSAGE_SENT') webhookEvent = 'MESSAGE_DELIVERED';\n\nreturn [{ json: {\n  webhookEvent,\n  recipient:     body.recipient || '',\n  message:       body.message || '',\n  deliveredAt:   body.deliveredAt || body.sentAt || '',\n  failedAt:      body.failedAt || '',\n  errorMessage:  body.errorMessage || '',\n  errorCode:     body.errorCode || '',\n  sender_phone:  body.sender || body.from || body.phoneNumber || body.senderNumber ||\n                 (body.data && (body.data.sender || body.data.phoneNumber)) || '',\n  message_text:  body.message || body.body || body.text ||\n                 (body.data && (body.data.message || body.data.text)) || '',\n  raw_timestamp: body.receivedAt || body.createdAt || body.timestamp ||\n                 (body.data && (body.data.receivedAt || body.data.createdAt)) || '',\n}}];"
+          "jsCode": "// n8n task runner sandbox: crypto global not available, require('crypto') not available.\n// Signature verification gated on signatureEnforced=true (currently disabled).\n// To re-enable: set signatureEnforced = true \u2014 but note crypto.subtle must be available.\nconst secret = 'YOUR_TEXTBEE_WEBHOOK_SECRET';\n\nconst body = $input.first().json.body;\nconst received = (\n  ($input.first().json.headers && ($input.first().json.headers['x-signature'] || $input.first().json.headers['X-Signature'])) || ''\n).toLowerCase();\n\nconst signatureEnforced = false;\nif (!received) {\n  if (signatureEnforced) throw new Error('Missing TextBee signature \u2014 request rejected');\n  console.warn('WARNING: No TextBee signature \u2014 proceeding without verification (testing mode)');\n} else if (signatureEnforced) {\n  const encoder = new TextEncoder();\n  const key = await crypto.subtle.importKey(\n    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']\n  );\n  // TextBee signs JSON.stringify(payload) where payload = parsed request body\n  const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(JSON.stringify(body)));\n  const expected = Array.from(new Uint8Array(sigBuffer))\n    .map(b => b.toString(16).padStart(2, '0')).join('');\n  if (expected !== received) {\n    throw new Error('Invalid TextBee signature \u2014 request rejected');\n  }\n}\n\n// Normalize MESSAGE_SENT \u2192 MESSAGE_DELIVERED\nlet webhookEvent = body.webhookEvent || '';\nif (webhookEvent === 'MESSAGE_SENT') webhookEvent = 'MESSAGE_DELIVERED';\n\nreturn [{ json: {\n  webhookEvent,\n  recipient:     body.recipient || '',\n  message:       body.message || '',\n  deliveredAt:   body.deliveredAt || body.sentAt || '',\n  failedAt:      body.failedAt || '',\n  errorMessage:  body.errorMessage || '',\n  errorCode:     body.errorCode || '',\n  sender_phone:  body.sender || body.from || body.phoneNumber || body.senderNumber ||\n                 (body.data && (body.data.sender || body.data.phoneNumber)) || '',\n  message_text:  body.message || body.body || body.text ||\n                 (body.data && (body.data.message || body.data.text)) || '',\n  raw_timestamp: body.receivedAt || body.createdAt || body.timestamp ||\n                 (body.data && (body.data.receivedAt || body.data.createdAt)) || '',\n}}];"
         },
-        "id": "d1c57586-da45-4fda-8ec8-266bc42062de",
+        "id": "7e4b8781-d4a4-4090-a932-61ea5d95d101",
         "name": "Verify & Parse",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -2112,9 +1146,9 @@
                   "options": {
                     "caseSensitive": true,
                     "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 1
+                    "typeValidation": "strict"
                   },
+                  "combinator": "and",
                   "conditions": [
                     {
                       "leftValue": "={{ $json.webhookEvent }}",
@@ -2122,11 +1156,9 @@
                       "operator": {
                         "type": "string",
                         "operation": "equals"
-                      },
-                      "id": "5718fd46-1ccb-4f93-9d3d-2eaac0ce1cc8"
+                      }
                     }
-                  ],
-                  "combinator": "and"
+                  ]
                 }
               },
               {
@@ -2134,9 +1166,9 @@
                   "options": {
                     "caseSensitive": true,
                     "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 1
+                    "typeValidation": "strict"
                   },
+                  "combinator": "and",
                   "conditions": [
                     {
                       "leftValue": "={{ $json.webhookEvent }}",
@@ -2144,11 +1176,9 @@
                       "operator": {
                         "type": "string",
                         "operation": "equals"
-                      },
-                      "id": "73023cd0-49bd-4099-a665-147adeeb7f90"
+                      }
                     }
-                  ],
-                  "combinator": "and"
+                  ]
                 }
               },
               {
@@ -2156,9 +1186,9 @@
                   "options": {
                     "caseSensitive": true,
                     "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 1
+                    "typeValidation": "strict"
                   },
+                  "combinator": "and",
                   "conditions": [
                     {
                       "leftValue": "={{ $json.webhookEvent }}",
@@ -2166,68 +1196,22 @@
                       "operator": {
                         "type": "string",
                         "operation": "equals"
-                      },
-                      "id": "82c00c42-3955-43da-92e3-506733194eac"
+                      }
                     }
-                  ],
-                  "combinator": "and"
+                  ]
                 }
               }
             ]
           },
           "options": {}
         },
-        "id": "af3c2b19-1329-4ca3-a821-98ed6cb53ce7",
+        "id": "1b6a3a9a-c1ea-4d9c-89ad-9af98d6f47ac",
         "name": "Route on Event",
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3,
         "position": [
           736,
           240
-        ]
-      },
-      {
-        "parameters": {
-          "documentId": {
-            "__rl": true,
-            "value": "YOUR_SPREADSHEET_ID",
-            "mode": "id"
-          },
-          "sheetName": {
-            "__rl": true,
-            "value": "Leads",
-            "mode": "name",
-            "cachedResultName": "Leads"
-          },
-          "combineFilters": "AND",
-          "options": {}
-        },
-        "id": "f7969829-0d4c-4bf1-9db2-cd858b1e58e2",
-        "name": "Read Leads (Delivery)",
-        "type": "n8n-nodes-base.googleSheets",
-        "typeVersion": 4,
-        "position": [
-          1024,
-          64
-        ],
-        "credentials": {
-          "googleSheetsOAuth2Api": {
-            "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
-            "name": "Google Sheets account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "const NZT_OFFSET = 13; // NZDT (UTC+13)\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  // If no timestamp (MESSAGE_SENT has none), fall back to current NZT time\n  const base = rawTime ? new Date(rawTime) : new Date();\n  const dt = (!rawTime || isNaN(base)) ? new Date() : base;\n  const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n  return nzt.toISOString().slice(0, 16).replace('T', ' ');\n}\n\nfunction getModeFromMessage(msg) {\n  if (msg.includes('Worth a chat?'))       return 'Initial Sent';\n  if (msg.includes('just following up'))   return 'F1 Sent';\n  if (msg.includes('Last one from me'))    return 'F2 Sent';\n  return null;\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst recipientNorm = normalizeForMatch(parsed.recipient);\n\n// Find matching lead row first\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === recipientNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nconst tsCol = getModeFromMessage(parsed.message);\n\nif (!tsCol) {\n  // Brandon's manual reply from TextBee \u2014 increment Brandon_Replies and queue for Conversations log\n  const currentCount = parseInt(matchRow['Brandon_Replies'] || '0', 10) || 0;\n  const nztTimestamp = toNZTStr(parsed.deliveredAt);\n  return [{\n    json: {\n      Mobile:           matchRow['Mobile'],\n      Brandon_Replies:  String(currentCount + 1),\n      _is_manual_reply: true,\n      phone_for_conv:   matchRow['Mobile'],\n      timestamp:        nztTimestamp,\n      message_text:     parsed.message,\n    }\n  }];\n}\n\n// WF1 scheduled send \u2014 confirm delivery timestamp\nconst confirmedTimestamp = toNZTStr(parsed.deliveredAt);\n\n// Idempotency guard: skip if timestamp already confirmed (handles duplicate webhook fires)\nconst existingTs = (matchRow[tsCol] || '').trim();\nif (existingTs && existingTs !== 'PENDING') return [];\n\nconst output = { Mobile: matchRow['Mobile'], _is_manual_reply: false };\noutput[tsCol] = confirmedTimestamp;\nreturn [{ json: output }];"
-        },
-        "id": "ac0b1563-6deb-437b-873a-058b28b376db",
-        "name": "Match & Confirm Delivery",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          1312,
-          64
         ]
       },
       {
@@ -2239,9 +1223,9 @@
                   "options": {
                     "caseSensitive": true,
                     "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 1
+                    "typeValidation": "strict"
                   },
+                  "combinator": "and",
                   "conditions": [
                     {
                       "leftValue": "={{ $json._is_manual_reply }}",
@@ -2249,11 +1233,9 @@
                       "operator": {
                         "type": "boolean",
                         "operation": "equals"
-                      },
-                      "id": "4585c446-c7e6-4b9f-a622-a1b45219f0a8"
+                      }
                     }
-                  ],
-                  "combinator": "and"
+                  ]
                 },
                 "renameOutput": true,
                 "outputKey": "Manual Reply"
@@ -2263,9 +1245,9 @@
                   "options": {
                     "caseSensitive": true,
                     "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 1
+                    "typeValidation": "strict"
                   },
+                  "combinator": "and",
                   "conditions": [
                     {
                       "leftValue": "={{ $json._is_manual_reply }}",
@@ -2273,21 +1255,18 @@
                       "operator": {
                         "type": "boolean",
                         "operation": "equals"
-                      },
-                      "id": "13578d5f-771e-4f14-b7ef-ca7cd773e1c4"
+                      }
                     }
-                  ],
-                  "combinator": "and"
+                  ]
                 },
                 "renameOutput": true,
                 "outputKey": "WF1 Send"
               }
             ]
           },
-          "options": {},
-          "fallbackOutput": 1
+          "options": {}
         },
-        "id": "ebd35b67-165e-4688-a57b-314b8e17c380",
+        "id": "ff3d02e4-60ba-4071-9502-efcedde8c72d",
         "name": "Route Reply Type",
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3,
@@ -2314,218 +1293,17 @@
             "mappingMode": "defineBelow",
             "value": {
               "Mobile": "={{ $json.Mobile }}",
-              "Brandon_Replies": "={{ $json.Brandon_Replies }}",
-              "row_number": 0
+              "Brandon_Replies": "={{ $json.Brandon_Replies }}"
             },
             "matchingColumns": [
               "Mobile"
             ],
             "schema": [
               {
-                "id": "Name",
-                "displayName": "Name",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
                 "id": "Mobile",
                 "displayName": "Mobile",
                 "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Email",
-                "displayName": "Email",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Agency",
-                "displayName": "Agency",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "City",
-                "displayName": "City",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Date Scraped",
-                "displayName": "Date Scraped",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Type",
-                "displayName": "Type",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Sent",
-                "displayName": "Initial Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Message",
-                "displayName": "Initial Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Sent",
-                "displayName": "F1 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Message",
-                "displayName": "F1 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Sent",
-                "displayName": "F2 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Message",
-                "displayName": "F2 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Replied",
-                "displayName": "Replied",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply After",
-                "displayName": "Reply After",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Received",
-                "displayName": "Reply Received",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Text",
-                "displayName": "Reply Text",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Outcome",
-                "displayName": "Outcome",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Notes",
-                "displayName": "Notes",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Status",
-                "displayName": "Status",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Lead_Replies",
-                "displayName": "Lead_Replies",
-                "required": false,
-                "defaultMatch": false,
+                "defaultMatch": true,
                 "display": true,
                 "type": "string",
                 "canBeUsedToMatch": true,
@@ -2538,27 +1316,14 @@
                 "defaultMatch": false,
                 "display": true,
                 "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "row_number",
-                "displayName": "row_number",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "number",
-                "canBeUsedToMatch": true,
-                "readOnly": true,
+                "canBeUsedToMatch": false,
                 "removed": false
               }
-            ],
-            "attemptToConvertTypes": false,
-            "convertFieldsToString": false
+            ]
           },
           "options": {}
         },
-        "id": "c1065770-275b-4034-8c6d-dd0c870de100",
+        "id": "6f0b6766-0f19-4ddc-a8bd-7dc3664fcb75",
         "name": "Update Brandon Reply Count",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
@@ -2641,7 +1406,7 @@
           },
           "options": {}
         },
-        "id": "91d7d7ed-cc81-4147-85bd-7dbb3d45cc31",
+        "id": "da230bae-5209-4140-9f72-13267bad1036",
         "name": "Log Manual Reply",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
@@ -2672,249 +1437,14 @@
           },
           "columns": {
             "mappingMode": "autoMapInputData",
-            "value": {},
             "matchingColumns": [
               "Mobile"
             ],
-            "schema": [
-              {
-                "id": "Name",
-                "displayName": "Name",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Mobile",
-                "displayName": "Mobile",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Email",
-                "displayName": "Email",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Agency",
-                "displayName": "Agency",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "City",
-                "displayName": "City",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Date Scraped",
-                "displayName": "Date Scraped",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Type",
-                "displayName": "Type",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Sent",
-                "displayName": "Initial Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Message",
-                "displayName": "Initial Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Sent",
-                "displayName": "F1 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Message",
-                "displayName": "F1 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Sent",
-                "displayName": "F2 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Message",
-                "displayName": "F2 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Replied",
-                "displayName": "Replied",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply After",
-                "displayName": "Reply After",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Received",
-                "displayName": "Reply Received",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Text",
-                "displayName": "Reply Text",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Outcome",
-                "displayName": "Outcome",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Notes",
-                "displayName": "Notes",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Status",
-                "displayName": "Status",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Lead_Replies",
-                "displayName": "Lead_Replies",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Brandon_Replies",
-                "displayName": "Brandon_Replies",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "row_number",
-                "displayName": "row_number",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "number",
-                "canBeUsedToMatch": true,
-                "readOnly": true,
-                "removed": false
-              }
-            ],
-            "attemptToConvertTypes": false,
-            "convertFieldsToString": false
+            "schema": []
           },
           "options": {}
         },
-        "id": "eaa22248-a170-4d74-afd1-a5483fd20ea8",
+        "id": "d44678e9-7088-49fb-adfb-96d8aaee8a07",
         "name": "Update Delivered Timestamp",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
@@ -2945,10 +1475,12 @@
           "combineFilters": "AND",
           "options": {}
         },
-        "id": "b9c0d4d5-c969-46cb-b439-f733802d3b72",
+        "id": "a24ab6c9-5153-4f61-9410-275d30833983",
         "name": "Read Leads (Failure)",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
+        "maxTries": 5,
+        "waitBetweenTries": 3000,
         "position": [
           1024,
           256
@@ -2958,13 +1490,14 @@
             "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
             "name": "Google Sheets account"
           }
-        }
+        },
+        "onError": "retryOnFail"
       },
       {
         "parameters": {
-          "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction getModeFromMessage(msg) {\n  if (msg.includes('Worth a chat?'))       return 'Initial Sent';\n  if (msg.includes('just following up'))   return 'F1 Sent';\n  if (msg.includes('Last one from me'))    return 'F2 Sent';\n  return null;\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst recipientNorm = normalizeForMatch(parsed.recipient);\nconst tsCol = getModeFromMessage(parsed.message);\nif (!tsCol) return [];\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === recipientNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nconst errorNote = 'FAILED: ' + (parsed.errorMessage || parsed.errorCode || 'unknown error');\nconst existingNotes = (matchRow['Notes'] || '').trim();\nconst notes = existingNotes ? existingNotes + '; ' + errorNote : errorNote;\n\nconst output = { Mobile: matchRow['Mobile'] };\noutput[tsCol] = '';  // clear PENDING \u2014 lead becomes eligible again\noutput['Notes'] = notes;\nreturn [{ json: output }];"
+          "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction getModeFromMessage(msg) {\n  if (msg.includes('Last one from me'))                               return 'F2 Sent';\n  if (msg.includes('following up'))                                   return 'F1 Sent';\n  if (msg.includes('Worth a chat?') || msg.includes('Building something')) return 'Initial Sent';\n  return null;\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst recipientNorm = normalizeForMatch(parsed.recipient);\nconst tsCol = getModeFromMessage(parsed.message);\nif (!tsCol) return [];\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === recipientNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nconst errorNote = 'FAILED: ' + (parsed.errorMessage || parsed.errorCode || 'unknown error');\nconst existingNotes = (matchRow['Notes'] || '').trim();\nconst notes = existingNotes ? existingNotes + '; ' + errorNote : errorNote;\n\nconst output = { Mobile: matchRow['Mobile'] };\noutput[tsCol] = '';  // clear PENDING \u2014 lead becomes eligible again\noutput['Notes'] = notes;\nreturn [{ json: output }];"
         },
-        "id": "10f7a23f-7624-470f-b11c-2e8058e17974",
+        "id": "28ac6820-9837-45ae-beda-3d6327fcc8b2",
         "name": "Match & Clear Failure",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -2989,249 +1522,14 @@
           },
           "columns": {
             "mappingMode": "autoMapInputData",
-            "value": {},
             "matchingColumns": [
               "Mobile"
             ],
-            "schema": [
-              {
-                "id": "Name",
-                "displayName": "Name",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Mobile",
-                "displayName": "Mobile",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Email",
-                "displayName": "Email",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Agency",
-                "displayName": "Agency",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "City",
-                "displayName": "City",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Date Scraped",
-                "displayName": "Date Scraped",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Type",
-                "displayName": "Type",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Sent",
-                "displayName": "Initial Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Message",
-                "displayName": "Initial Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Sent",
-                "displayName": "F1 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Message",
-                "displayName": "F1 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Sent",
-                "displayName": "F2 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Message",
-                "displayName": "F2 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Replied",
-                "displayName": "Replied",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply After",
-                "displayName": "Reply After",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Received",
-                "displayName": "Reply Received",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Text",
-                "displayName": "Reply Text",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Outcome",
-                "displayName": "Outcome",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Notes",
-                "displayName": "Notes",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Status",
-                "displayName": "Status",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Lead_Replies",
-                "displayName": "Lead_Replies",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Brandon_Replies",
-                "displayName": "Brandon_Replies",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "row_number",
-                "displayName": "row_number",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "number",
-                "canBeUsedToMatch": true,
-                "readOnly": true,
-                "removed": false
-              }
-            ],
-            "attemptToConvertTypes": false,
-            "convertFieldsToString": false
+            "schema": []
           },
           "options": {}
         },
-        "id": "ecaf3121-d5ad-4365-b44b-1a2f1549a8e4",
+        "id": "ca1dd807-2931-433f-888b-0369400bc997",
         "name": "Update Failure Record",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
@@ -3271,7 +1569,7 @@
             "temperature": 0
           }
         },
-        "id": "7a1e7884-8181-4add-8a47-ed2d3d087ff6",
+        "id": "9ed8e0cd-8b2a-47e1-b4c8-7ae04e31280e",
         "name": "Message a model",
         "type": "@n8n/n8n-nodes-langchain.openAi",
         "typeVersion": 2.1,
@@ -3290,7 +1588,7 @@
         "parameters": {
           "jsCode": "const json = $input.item.json;\n\n// n8n OpenAI langchain node v2.1 returns:\n//   json.output = [{ content: [{ type: \"output_text\", text: \"...\" }] }]\nlet raw = '';\nif (Array.isArray(json.output) && json.output[0]) {\n  const content = json.output[0].content;\n  if (Array.isArray(content)) {\n    const chunk = content.find(c => c.text) || content[0];\n    if (chunk) raw = chunk.text || '';\n  } else if (typeof json.output[0] === 'string') {\n    raw = json.output[0];\n  }\n}\n// Fallbacks for other node versions\nif (!raw) {\n  const candidate = json.text || json.response || json.content ||\n    (json.message && (json.message.content || json.message.text)) ||\n    (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';\n  raw = typeof candidate === 'string' ? candidate : JSON.stringify(candidate);\n}\nraw = raw.trim();\n\nconst VALID = ['Interested', 'Not Interested', 'Opted Out', 'Question', 'Call Back Later', 'Wrong Role', 'Other'];\nlet status = 'Other';\n\ntry {\n  const parsed = JSON.parse(raw);\n  const candidate = parsed.status || '';\n  if (VALID.includes(candidate)) status = candidate;\n} catch(e) {\n  // Try regex match first\n  const match = raw.match(/\"status\"\\s*:\\s*\"([^\"]+)\"/);\n  if (match && VALID.includes(match[1])) {\n    status = match[1];\n  } else {\n    // Keyword fallback: scan raw text for any known status\n    for (const s of VALID) {\n      if (raw.includes(s)) { status = s; break; }\n    }\n  }\n}\nreturn [{ json: { classified_status: status } }];"
         },
-        "id": "eb0d4906-1047-4d59-af6e-a02f5cb75c58",
+        "id": "6af4457a-18a7-46b2-9c8e-0d8c7424905d",
         "name": "Parse Classification",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -3315,10 +1613,12 @@
           "combineFilters": "AND",
           "options": {}
         },
-        "id": "24443ebc-d015-4639-985a-6117f5c7c4e3",
+        "id": "1af6afce-5d7b-459a-98c4-4096272c2206",
         "name": "Read Leads (Inbound)",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
+        "maxTries": 5,
+        "waitBetweenTries": 3000,
         "position": [
           1536,
           448
@@ -3328,13 +1628,14 @@
             "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
             "name": "Google Sheets account"
           }
-        }
+        },
+        "onError": "retryOnFail"
       },
       {
         "parameters": {
-          "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  if (!rawTime) return '';\n  try {\n    const dt = new Date(rawTime);\n    if (isNaN(dt)) return rawTime;\n    const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n    return nzt.toISOString().slice(0, 16).replace('T', ' ');\n  } catch(e) { return rawTime; }\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst senderNorm = normalizeForMatch(parsed.sender_phone);\nconst messageText = parsed.message_text;\nconst receivedStr = toNZTStr(parsed.raw_timestamp);\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === senderNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nlet replyAfter = 'Unknown';\nif ((matchRow['F2 Sent'] || '').trim() && matchRow['F2 Sent'] !== 'PENDING') replyAfter = 'F2';\nelse if ((matchRow['F1 Sent'] || '').trim() && matchRow['F1 Sent'] !== 'PENDING') replyAfter = 'F1';\nelse if ((matchRow['Initial Sent'] || '').trim()) replyAfter = 'Initial';\n\nconst currentLeadReplies = parseInt(matchRow['Lead_Replies'] || '0', 10) || 0;\n\nreturn [{\n  json: {\n    Mobile:           matchRow['Mobile'],\n    Replied:          'Y',\n    'Reply After':    replyAfter,\n    'Reply Received': receivedStr,\n    'Reply Text':     messageText,\n    Status:           $('Parse Classification').item.json.classified_status || 'Other',\n    Lead_Replies:     String(currentLeadReplies + 1),\n    phone_for_conv:   matchRow['Mobile'],\n    message_text:     messageText,\n    timestamp:        receivedStr,\n    Name:             matchRow['Name'] || '',\n    Agency:           matchRow['Agency'] || '',\n    City:             matchRow['City'] || '',\n  }\n}];"
+          "jsCode": "const NZT_OFFSET = 13;\n\nfunction normalizeForMatch(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  if (!rawTime) return '';\n  try {\n    const dt = new Date(rawTime);\n    if (isNaN(dt)) return rawTime;\n    const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n    return nzt.toISOString().slice(0, 16).replace('T', ' ');\n  } catch(e) { return rawTime; }\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst senderNorm = normalizeForMatch(parsed.sender_phone);\nconst messageText = parsed.message_text;\nconst receivedStr = toNZTStr(parsed.raw_timestamp);\n\nconst rows = $input.all();\nlet matchRow = null;\nfor (const item of rows) {\n  if (normalizeForMatch(item.json['Mobile'] || '') === senderNorm) {\n    matchRow = item.json;\n    break;\n  }\n}\nif (!matchRow) return [];\n\nlet replyAfter = 'Unknown';\nif ((matchRow['F2 Sent'] || '').trim() && matchRow['F2 Sent'] !== 'PENDING') replyAfter = 'F2';\nelse if ((matchRow['F1 Sent'] || '').trim() && matchRow['F1 Sent'] !== 'PENDING') replyAfter = 'F1';\nelse if ((matchRow['Initial Sent'] || '').trim()) replyAfter = 'Initial';\n\nconst currentLeadReplies = parseInt(matchRow['Lead_Replies'] || '0', 10) || 0;\n\nreturn [{\n  json: {\n    Mobile:           matchRow['Mobile'],\n    Replied:          true,\n    'Reply After':    replyAfter,\n    'Reply Received': receivedStr,\n    'Reply Text':     messageText,\n    Status:           $('Parse Classification').item.json.classified_status || 'Other',\n    Lead_Replies:     String(currentLeadReplies + 1),\n    phone_for_conv:   matchRow['Mobile'],\n    message_text:     messageText,\n    timestamp:        receivedStr,\n    Name:             matchRow['Name'] || '',\n    Agency:           matchRow['Agency'] || '',\n    City:             matchRow['City'] || '',\n  }\n}];"
         },
-        "id": "0b59828c-5bbe-4c04-833a-038383ae247d",
+        "id": "9a4711db-313b-4697-9832-a9990a8c5f58",
         "name": "Match & Prepare Inbound",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -3359,249 +1660,14 @@
           },
           "columns": {
             "mappingMode": "autoMapInputData",
-            "value": {},
             "matchingColumns": [
               "Mobile"
             ],
-            "schema": [
-              {
-                "id": "Name",
-                "displayName": "Name",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Mobile",
-                "displayName": "Mobile",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Email",
-                "displayName": "Email",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Agency",
-                "displayName": "Agency",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "City",
-                "displayName": "City",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Date Scraped",
-                "displayName": "Date Scraped",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Type",
-                "displayName": "Type",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Sent",
-                "displayName": "Initial Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Initial Message",
-                "displayName": "Initial Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Sent",
-                "displayName": "F1 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F1 Message",
-                "displayName": "F1 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Sent",
-                "displayName": "F2 Sent",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "F2 Message",
-                "displayName": "F2 Message",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Replied",
-                "displayName": "Replied",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply After",
-                "displayName": "Reply After",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Received",
-                "displayName": "Reply Received",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Reply Text",
-                "displayName": "Reply Text",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Outcome",
-                "displayName": "Outcome",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Notes",
-                "displayName": "Notes",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Status",
-                "displayName": "Status",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Lead_Replies",
-                "displayName": "Lead_Replies",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "Brandon_Replies",
-                "displayName": "Brandon_Replies",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "string",
-                "canBeUsedToMatch": true,
-                "removed": false
-              },
-              {
-                "id": "row_number",
-                "displayName": "row_number",
-                "required": false,
-                "defaultMatch": false,
-                "display": true,
-                "type": "number",
-                "canBeUsedToMatch": true,
-                "readOnly": true,
-                "removed": false
-              }
-            ],
-            "attemptToConvertTypes": false,
-            "convertFieldsToString": false
+            "schema": []
           },
           "options": {}
         },
-        "id": "ffff469e-4204-4a65-a895-25558d5bf31e",
+        "id": "92b941f6-2d80-41f1-9e86-e6b2ce1aee49",
         "name": "Update Reply Columns",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
@@ -3684,7 +1750,7 @@
           },
           "options": {}
         },
-        "id": "76ccb509-7779-453f-ba10-b1960e4b2b82",
+        "id": "d517a36e-e455-4243-ac77-9805910454cd",
         "name": "Log to Conversations",
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4,
@@ -3773,7 +1839,7 @@
           },
           "options": {}
         },
-        "id": "b6576311-7ba3-4197-97e8-53860d1e5d45",
+        "id": "0dbfd181-85cc-476e-bb82-1fd6a0e7a843",
         "name": "Email Switch",
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3,
@@ -3789,7 +1855,7 @@
           "message": "=<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;border:2px solid #dc2626;border-radius:8px;overflow:hidden\">\n  <div style=\"background:#dc2626;padding:20px 24px\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px\">\ud83d\udd25 HOT LEAD REPLY</h1>\n    <p style=\"color:#fca5a5;margin:6px 0 0;font-size:14px\">A lead replied interested \u2014 CALL THEM NOW</p>\n  </div>\n  <div style=\"padding:24px\">\n    <table style=\"width:100%;border-collapse:collapse;margin-bottom:20px\">\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px;width:80px\">Name</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Name'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Agency</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Agency'] }}</td></tr>\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">City</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['City'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Mobile</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Mobile'] }}</td></tr>\n    </table>\n    <div style=\"background:#fef2f2;border-left:4px solid #dc2626;padding:12px 16px;margin-bottom:20px;border-radius:0 4px 4px 0\">\n      <p style=\"margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Their reply</p>\n      <p style=\"margin:0;font-size:15px;color:#111\">{{ $('Match & Prepare Inbound').item.json['message_text'] }}</p>\n    </div>\n    <div style=\"background:#f0fdf4;border:1px solid #bbf7d0;padding:12px 16px;border-radius:4px\">\n      <p style=\"margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Suggested follow-up text</p>\n      <p style=\"margin:0;font-size:14px;color:#166534\">Hey [name], great to hear! I'd love to show you how it works \u2014 are you free for a 15-min call this week? - Brandon</p>\n    </div>\n  </div>\n</div>",
           "options": {}
         },
-        "id": "79c94a9e-5384-4518-a9c8-9cc3aa440a5d",
+        "id": "8c26f6c8-c1c0-416f-afbd-aadd5d4734de",
         "name": "Email \u2014 Interested",
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
@@ -3797,7 +1863,7 @@
           2656,
           256
         ],
-        "webhookId": "aaaaaaaa-0000-0000-0000-000000000003",
+        "webhookId": "4c8fdf94-5903-4a66-b066-50e1a51ccf33",
         "credentials": {
           "gmailOAuth2": {
             "id": "YOUR_GMAIL_CREDENTIAL_ID",
@@ -3812,7 +1878,7 @@
           "message": "=<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;border:2px solid #2563eb;border-radius:8px;overflow:hidden\">\n  <div style=\"background:#2563eb;padding:20px 24px\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px\">\u2753 LEAD HAS A QUESTION</h1>\n    <p style=\"color:#bfdbfe;margin:6px 0 0;font-size:14px\">Reply ASAP while the conversation is warm</p>\n  </div>\n  <div style=\"padding:24px\">\n    <table style=\"width:100%;border-collapse:collapse;margin-bottom:20px\">\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px;width:80px\">Name</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Name'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Agency</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Agency'] }}</td></tr>\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">City</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['City'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Mobile</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Mobile'] }}</td></tr>\n    </table>\n    <div style=\"background:#eff6ff;border-left:4px solid #2563eb;padding:12px 16px;border-radius:0 4px 4px 0\">\n      <p style=\"margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Their question</p>\n      <p style=\"margin:0;font-size:15px;color:#111\">{{ $('Match & Prepare Inbound').item.json['message_text'] }}</p>\n    </div>\n  </div>\n</div>",
           "options": {}
         },
-        "id": "55dfb149-3389-4c91-bcfd-6733bc66eb92",
+        "id": "1976e0b0-ee93-47a9-8c0c-055050fe9d38",
         "name": "Email \u2014 Question",
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
@@ -3820,7 +1886,7 @@
           2656,
           448
         ],
-        "webhookId": "aaaaaaaa-0000-0000-0000-000000000004",
+        "webhookId": "78ad1f75-295f-4464-bb92-113b1012eacd",
         "credentials": {
           "gmailOAuth2": {
             "id": "YOUR_GMAIL_CREDENTIAL_ID",
@@ -3835,7 +1901,7 @@
           "message": "=<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;border:2px solid #d97706;border-radius:8px;overflow:hidden\">\n  <div style=\"background:#d97706;padding:20px 24px\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px\">\u23f0 ASKED TO CALL BACK</h1>\n    <p style=\"color:#fde68a;margin:6px 0 0;font-size:14px\">Not a no \u2014 follow up soon</p>\n  </div>\n  <div style=\"padding:24px\">\n    <table style=\"width:100%;border-collapse:collapse;margin-bottom:20px\">\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px;width:80px\">Name</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Name'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Agency</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Agency'] }}</td></tr>\n      <tr><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">City</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['City'] }}</td></tr>\n      <tr style=\"background:#f9fafb\"><td style=\"padding:6px 12px 6px 0;color:#6b7280;font-size:13px\">Mobile</td><td style=\"padding:6px 0;font-weight:600\">{{ $('Match & Prepare Inbound').item.json['Mobile'] }}</td></tr>\n    </table>\n    <div style=\"background:#fffbeb;border-left:4px solid #d97706;padding:12px 16px;border-radius:0 4px 4px 0\">\n      <p style=\"margin:0 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px\">Their message</p>\n      <p style=\"margin:0;font-size:15px;color:#111\">{{ $('Match & Prepare Inbound').item.json['message_text'] }}</p>\n    </div>\n  </div>\n</div>",
           "options": {}
         },
-        "id": "778ecc91-9025-439a-b1ce-5c1076c22377",
+        "id": "4d28d221-d58d-48c3-ad41-559d1d9be324",
         "name": "Email \u2014 Call Back Later",
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
@@ -3843,13 +1909,26 @@
           2656,
           640
         ],
-        "webhookId": "aaaaaaaa-0000-0000-0000-000000000005",
+        "webhookId": "3244f128-ca97-4e7f-908c-3073e3eda7fc",
         "credentials": {
           "gmailOAuth2": {
             "id": "YOUR_GMAIL_CREDENTIAL_ID",
             "name": "Gmail account"
           }
         }
+      },
+      {
+        "parameters": {
+          "jsCode": "const NZT_OFFSET = 13; // NZDT (UTC+13)\n\nfunction normalizePhone(phone) {\n  if (!phone) return '';\n  return phone.replace(/[\\s\\-\\(\\)]/g, '')\n              .replace(/^\\+64/, '0')\n              .replace(/^64/, '0');\n}\n\nfunction toNZTStr(rawTime) {\n  const base = rawTime ? new Date(rawTime) : new Date();\n  const dt = (!rawTime || isNaN(base)) ? new Date() : base;\n  const nzt = new Date(dt.getTime() + NZT_OFFSET * 3600000);\n  return nzt.toISOString().slice(0, 16).replace('T', ' ');\n}\n\nconst parsed = $('Verify & Parse').item.json;\nconst mobile = normalizePhone(parsed.recipient);\nconst msg = (parsed.message || '').trim();\n\n// Determine stage column from message keywords (no sheet read needed)\nlet tsCol;\nif (msg.includes('Last one from me')) {\n  tsCol = 'F2 Sent';\n} else if (msg.includes('following up')) {\n  tsCol = 'F1 Sent';\n} else if (msg.includes('Worth a chat?') || msg.includes('Building something')) {\n  tsCol = 'Initial Sent';\n} else {\n  // No keyword match \u2014 Brandon manual reply or unknown message; terminate cleanly\n  return [];\n}\n\nconst ts = toNZTStr(parsed.deliveredAt);\nconst output = { Mobile: mobile, _is_manual_reply: false };\noutput[tsCol] = ts;\nreturn [{ json: output }];"
+        },
+        "id": "a7f3d812-1b2e-4c8f-9e3a-5d6f7a8b9c0d",
+        "name": "Resolve Stage",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1024,
+          64
+        ]
       }
     ],
     "connections": {
@@ -3879,7 +1958,7 @@
         "main": [
           [
             {
-              "node": "Read Leads (Delivery)",
+              "node": "Resolve Stage",
               "type": "main",
               "index": 0
             }
@@ -3894,28 +1973,6 @@
           [
             {
               "node": "Message a model",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Read Leads (Delivery)": {
-        "main": [
-          [
-            {
-              "node": "Match & Confirm Delivery",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Match & Confirm Delivery": {
-        "main": [
-          [
-            {
-              "node": "Route Reply Type",
               "type": "main",
               "index": 0
             }
@@ -4063,6 +2120,17 @@
             }
           ]
         ]
+      },
+      "Resolve Stage": {
+        "main": [
+          [
+            {
+              "node": "Route Reply Type",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Your Name",
@@ -4071,20 +2139,20 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-16T23:05:16.162Z",
-        "id": 91,
+        "createdAt": "2026-03-27T05:08:26.867Z",
+        "id": 192,
         "workflowId": "bEGBRXLuX4TvUj5e",
-        "versionId": "4af17d70-5428-47ff-b86d-0146583a50bb",
+        "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
         "event": "activated",
-        "userId": "bbc22449-1cc6-48f3-a48e-2171661c253f"
+        "userId": "YOUR_N8N_USER_ID"
       },
       {
-        "createdAt": "2026-03-16T23:05:16.148Z",
-        "id": 90,
+        "createdAt": "2026-03-27T05:08:26.849Z",
+        "id": 191,
         "workflowId": "bEGBRXLuX4TvUj5e",
-        "versionId": "4af17d70-5428-47ff-b86d-0146583a50bb",
+        "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
         "event": "deactivated",
-        "userId": "bbc22449-1cc6-48f3-a48e-2171661c253f"
+        "userId": "YOUR_N8N_USER_ID"
       }
     ]
   }
