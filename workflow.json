@@ -1,7 +1,7 @@
 {
   "updatedAt": "2026-03-27T05:08:26.779Z",
   "createdAt": "2026-03-10T00:33:16.655Z",
-  "id": "bEGBRXLuX4TvUj5e",
+  "id": "YOUR_WF2_WORKFLOW_ID",
   "name": "SMS Inbound Webhook",
   "description": null,
   "active": true,
@@ -496,7 +496,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "BcY5ADBAEsUMn54u",
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       }
@@ -1060,8 +1060,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
-  "activeVersionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
+  "versionId": "YOUR_WF2_VERSION_ID",
+  "activeVersionId": "YOUR_WF2_VERSION_ID",
   "versionCounter": 244,
   "triggerCount": 1,
   "shared": [
@@ -1069,7 +1069,7 @@
       "updatedAt": "2026-03-10T00:33:16.657Z",
       "createdAt": "2026-03-10T00:33:16.657Z",
       "role": "workflow:owner",
-      "workflowId": "bEGBRXLuX4TvUj5e",
+      "workflowId": "YOUR_WF2_WORKFLOW_ID",
       "projectId": "YOUR_N8N_PROJECT_ID",
       "project": {
         "updatedAt": "2026-03-09T23:25:14.299Z",
@@ -1087,8 +1087,8 @@
   "activeVersion": {
     "updatedAt": "2026-03-27T05:08:26.780Z",
     "createdAt": "2026-03-27T05:08:26.780Z",
-    "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
-    "workflowId": "bEGBRXLuX4TvUj5e",
+    "versionId": "YOUR_WF2_VERSION_ID",
+    "workflowId": "YOUR_WF2_WORKFLOW_ID",
     "nodes": [
       {
         "parameters": {
@@ -1579,7 +1579,7 @@
         ],
         "credentials": {
           "openAiApi": {
-            "id": "BcY5ADBAEsUMn54u",
+            "id": "YOUR_OPENAI_CREDENTIAL_ID",
             "name": "OpenAi account"
           }
         }
@@ -2141,16 +2141,16 @@
       {
         "createdAt": "2026-03-27T05:08:26.867Z",
         "id": 192,
-        "workflowId": "bEGBRXLuX4TvUj5e",
-        "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
+        "workflowId": "YOUR_WF2_WORKFLOW_ID",
+        "versionId": "YOUR_WF2_VERSION_ID",
         "event": "activated",
         "userId": "YOUR_N8N_USER_ID"
       },
       {
         "createdAt": "2026-03-27T05:08:26.849Z",
         "id": 191,
-        "workflowId": "bEGBRXLuX4TvUj5e",
-        "versionId": "239e7969-fcc1-4e22-9fdd-0ce3ba9b12a8",
+        "workflowId": "YOUR_WF2_WORKFLOW_ID",
+        "versionId": "YOUR_WF2_VERSION_ID",
         "event": "deactivated",
         "userId": "YOUR_N8N_USER_ID"
       }
